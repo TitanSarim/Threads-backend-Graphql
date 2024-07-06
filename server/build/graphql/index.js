@@ -8,23 +8,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const express4_1 = require("@apollo/server/express4");
-const graphql_1 = __importDefault(require("./graphql"));
-function init() {
+const server_1 = require("@apollo/server");
+const user_1 = require("./user");
+function createApolloGraphqlServer() {
     return __awaiter(this, void 0, void 0, function* () {
-        const app = (0, express_1.default)();
-        const port = 8000;
-        app.use(express_1.default.json());
-        app.get('/', (req, res) => {
-            res.json({ message: "Server is up and running" });
+        const gqlServer = new server_1.ApolloServer({
+            typeDefs: `
+            type Query{
+               hello: String
+            }
+            type Mutation{
+                ${user_1.User.mutations}
+            }
+        `,
+            resolvers: {
+                Query: Object.assign({}, user_1.User.resolvers.queries),
+                Mutation: Object.assign({}, user_1.User.resolvers.mutations)
+            }
         });
-        app.use('/graphql', (0, express4_1.expressMiddleware)(yield (0, graphql_1.default)()));
-        app.listen(port, () => console.log("Server is up and running at port 8000"));
+        // start gql server
+        yield gqlServer.start();
+        return gqlServer;
     });
 }
-init();
+exports.default = createApolloGraphqlServer;
