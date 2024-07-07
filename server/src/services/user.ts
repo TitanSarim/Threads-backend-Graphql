@@ -27,6 +27,10 @@ class UserService {
             return hashedPassword
         }
 
+        public static getUserById(id: string){
+            return primsaClient.user.findUnique({where: {id: id}})
+        }
+
         public static createUser(payload: CreateUserPayload){
             const {firstName,lastName,email,password} = payload
             const salt = randomBytes(32).toString('hex')
@@ -61,6 +65,10 @@ class UserService {
             }, JWT_SECRET)
             return token
         }
+
+    public static decodeJwtToken(token: string){
+        return JWT.verify(token, JWT_SECRET);
+    }
 
 }
 
